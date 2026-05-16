@@ -26,7 +26,7 @@ export default function TitleBar() {
       style={{ WebkitAppRegion: 'drag' }}
     >
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-white/80">MD-TXT Browser</span>
+        <span className="text-sm font-medium text-white/80">MDTXT</span>
         {rootFolderPath && (
           <span className="text-xs text-white/40 truncate max-w-[200px]">
             {rootFolderPath}
