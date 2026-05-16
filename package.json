@@ -47,7 +47,7 @@
   },
   "build": {
     "appId": "com.example.md-txt-browser",
-    "productName": "MD-TXT Browser",
+    "productName": "md-txt-browser",
     "directories": {
       "output": "dist"
     },
@@ -63,7 +63,8 @@
       "icon": "build/icon.png"
     },
     "deb": {
-      "depends": []
+      "depends": [],
+      "afterInstall": "scripts/afterInstall.sh"
     }
   }
 }
