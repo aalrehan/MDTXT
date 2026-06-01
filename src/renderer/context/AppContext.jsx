@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 
 const AppContext = createContext(null)
 
@@ -11,6 +11,8 @@ export function AppProvider({ children }) {
   const [zoomLevel, setZoomLevel] = useState(100)
   const [toastMessage, setToastMessage] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
+  const [highlights, setHighlights] = useState({})
+  const saveTimersRef = useRef({})
 
   useEffect(() => {
     const savedZoom = localStorage.getItem('md-browser-zoom')
@@ -60,6 +62,25 @@ export function AppProvider({ children }) {
     }
   }, [])
 
+  const loadHighlightsForFile = useCallback(async (filePath) => {
+    try {
+      const list = await window.electronAPI.loadHighlights(filePath)
+      setHighlights(prev => ({ ...prev, [filePath]: Array.isArray(list) ? list : [] }))
+    } catch (e) {
+      setHighlights(prev => ({ ...prev, [filePath]: [] }))
+    }
+  }, [])
+
+  const persistHighlights = useCallback((filePath, list) => {
+    if (!filePath) return
+    if (saveTimersRef.current[filePath]) {
+      clearTimeout(saveTimersRef.current[filePath])
+    }
+    saveTimersRef.current[filePath] = setTimeout(() => {
+      window.electronAPI.saveHighlights(filePath, list)
+    }, 300)
+  }, [])
+
   useEffect(() => {
     if (rootFolderPath) {
       scanFolder(rootFolderPath)
@@ -74,11 +95,12 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (selectedFile) {
       readFileContent(selectedFile)
+      loadHighlightsForFile(selectedFile.path)
     } else {
       setFileContent(null)
       setFileError(null)
     }
-  }, [selectedFile, readFileContent])
+  }, [selectedFile, readFileContent, loadHighlightsForFile])
 
   const value = {
     rootFolderPath,
@@ -92,7 +114,10 @@ export function AppProvider({ children }) {
     setZoomLevel,
     toastMessage,
     toastVisible,
-    showToast
+    showToast,
+    highlights,
+    setHighlights,
+    persistHighlights
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

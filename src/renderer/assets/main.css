@@ -49,3 +49,16 @@ body {
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+.mdt-highlight {
+  background: rgba(250, 204, 21, 0.45);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.mdt-highlight:hover {
+  background: rgba(250, 204, 21, 0.65);
+}

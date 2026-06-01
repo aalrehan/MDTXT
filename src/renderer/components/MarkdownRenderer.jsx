@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import { Copy, Check } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import HighlightableViewer from './HighlightableViewer'
 
 function CustomCodeBlock({ node, inline, className, children, ...props }) {
   const [copied, setCopied] = useState(false)
@@ -78,23 +79,25 @@ function CustomImage({ src, alt }) {
 }
 
 export default function MarkdownRenderer({ content }) {
-  const { zoomLevel } = useApp()
+  const { zoomLevel, selectedFile } = useApp()
 
   return (
-    <div
-      className="prose prose-invert max-w-none p-8"
-      style={{ fontSize: zoomLevel + '%' }}
-    >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={{
-          code: CustomCodeBlock,
-          img: CustomImage
-        }}
+    <HighlightableViewer filePath={selectedFile?.path}>
+      <div
+        className="prose prose-invert max-w-none p-8"
+        style={{ fontSize: zoomLevel + '%' }}
       >
-        {content || ''}
-      </ReactMarkdown>
-    </div>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight]}
+          components={{
+            code: CustomCodeBlock,
+            img: CustomImage
+          }}
+        >
+          {content || ''}
+        </ReactMarkdown>
+      </div>
+    </HighlightableViewer>
   )
 }

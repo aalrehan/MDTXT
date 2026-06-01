@@ -3,7 +3,36 @@ const path = require('path')
 const fs = require('fs')
 const { pathToFileURL } = require('url')
 
+app.commandLine.appendSwitch('no-sandbox')
+
 let mainWindow = null
+
+function getHighlightsFile() {
+  return path.join(app.getPath('userData'), 'highlights.json')
+}
+
+function readHighlightsStore() {
+  try {
+    const file = getHighlightsFile()
+    if (!fs.existsSync(file)) return {}
+    const raw = fs.readFileSync(file, 'utf-8')
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch (e) {
+    return {}
+  }
+}
+
+function writeHighlightsStore(store) {
+  try {
+    const file = getHighlightsFile()
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    fs.writeFileSync(file, JSON.stringify(store, null, 2), 'utf-8')
+    return true
+  } catch (e) {
+    return false
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -122,4 +151,24 @@ ipcMain.handle('window:maximize', () => {
 
 ipcMain.handle('window:close', () => {
   if (mainWindow) mainWindow.close()
+})
+
+ipcMain.handle('highlights:load', (_event, filePath) => {
+  if (typeof filePath !== 'string' || !filePath) return []
+  const store = readHighlightsStore()
+  return Array.isArray(store[filePath]) ? store[filePath] : []
+})
+
+ipcMain.handle('highlights:save', (_event, filePath, highlights) => {
+  if (typeof filePath !== 'string' || !filePath) {
+    return { ok: false, error: 'invalid filePath' }
+  }
+  const store = readHighlightsStore()
+  if (!Array.isArray(highlights) || highlights.length === 0) {
+    delete store[filePath]
+  } else {
+    store[filePath] = highlights
+  }
+  const ok = writeHighlightsStore(store)
+  return { ok }
 })

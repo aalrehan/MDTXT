@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useApp } from '../context/AppContext'
+import HighlightableViewer from './HighlightableViewer'
 
 export default function PlainTextViewer({ content }) {
-  const { zoomLevel } = useApp()
+  const { zoomLevel, selectedFile } = useApp()
+  const contentRef = useRef(null)
 
   if (!content) {
     return null
@@ -27,14 +29,16 @@ export default function PlainTextViewer({ content }) {
           </div>
         ))}
       </div>
-      <div className="flex-1 bg-[#0f0f12] pt-8 pb-8">
-        <pre
-          className="whitespace-pre-wrap break-words text-white/80 leading-[1.6]"
-          style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
-        >
-          {content}
-        </pre>
-      </div>
+      <HighlightableViewer filePath={selectedFile?.path} scopeRef={contentRef}>
+        <div ref={contentRef} className="flex-1 bg-[#0f0f12] pt-8 pb-8">
+          <pre
+            className="whitespace-pre-wrap break-words text-white/80 leading-[1.6]"
+            style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+          >
+            {content}
+          </pre>
+        </div>
+      </HighlightableViewer>
     </div>
   )
 }
