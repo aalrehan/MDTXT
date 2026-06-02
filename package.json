@@ -6,7 +6,7 @@
   "homepage": "https://github.com/aalrehan/mdtxt",
   "author": {
     "name": "aalrehan",
-    "email": "aalrehan@gmail.com"
+    "email": "aalrehan@users.noreply.github.com"
   },
   "scripts": {
     "dev": "electron-vite dev",
