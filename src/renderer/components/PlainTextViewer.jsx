@@ -16,11 +16,11 @@ export default function PlainTextViewer({ content }) {
 
   return (
     <div
-      className="flex font-mono text-sm overflow-auto h-full"
+      className="flex font-mono text-sm overflow-auto h-full bg-bg-primary text-text-primary"
       style={{ fontSize: zoomLevel + '%' }}
     >
       <div
-        className="select-none text-right text-white/30 pr-4 pt-8 pb-8 min-w-[60px]"
+        className="select-none text-right pr-4 pt-8 pb-8 min-w-[60px] text-text-muted"
         style={{ minWidth: lineNumberWidth }}
       >
         {lines.map((_, i) => (
@@ -30,9 +30,9 @@ export default function PlainTextViewer({ content }) {
         ))}
       </div>
       <HighlightableViewer filePath={selectedFile?.path} scopeRef={contentRef}>
-        <div ref={contentRef} className="flex-1 bg-[#0f0f12] pt-8 pb-8">
+        <div ref={contentRef} className="flex-1 pt-8 pb-8">
           <pre
-            className="whitespace-pre-wrap break-words text-white/80 leading-[1.6]"
+            className="whitespace-pre-wrap break-words text-text-primary leading-[1.6]"
             style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
           >
             {content}

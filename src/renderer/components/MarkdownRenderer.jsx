@@ -11,7 +11,7 @@ function CustomCodeBlock({ node, inline, className, children, ...props }) {
 
   if (inline) {
     return (
-      <code className="bg-white/10 rounded px-1.5 py-0.5 text-sm font-mono" {...props}>
+      <code className="bg-code-inline rounded px-1.5 py-0.5 text-sm font-mono text-text-primary" {...props}>
         {children}
       </code>
     )
@@ -30,18 +30,21 @@ function CustomCodeBlock({ node, inline, className, children, ...props }) {
   return (
     <div className="relative group mb-4">
       {language && (
-        <div className="absolute top-0 right-2 text-xs text-white/40 bg-white/5 px-2 py-1 rounded-b-md font-mono">
+        <div className="absolute top-0 right-2 text-[10px] text-text-muted bg-bg-sidebar px-2 py-1 rounded-b-md font-mono uppercase tracking-wider">
           {language}
         </div>
       )}
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-150"
+        className="absolute top-2 right-2 p-1.5 rounded-md bg-bg-sidebar hover:bg-border-strong text-text-muted hover:text-text-primary opacity-0 group-hover:opacity-100 transition-all duration-150"
         title="Copy code"
       >
         {copied ? <Check size={14} /> : <Copy size={14} />}
       </button>
-      <pre className="bg-[#1e1e23] rounded-lg p-4 overflow-x-auto border border-white/5 shadow-lg">
+      <pre
+        className="bg-bg-code rounded-lg p-4 overflow-x-auto border border-border-subtle"
+        style={{ boxShadow: 'var(--code-block-shadow)' }}
+      >
         <code className={`language-${language}`} {...props}>
           {children}
         </code>
@@ -72,19 +75,20 @@ function CustomImage({ src, alt }) {
     <img
       src={imageSrc}
       alt={alt}
-      className="max-w-full rounded-lg my-4"
+      className="max-w-full rounded-lg my-4 border border-border-subtle"
       style={{ maxHeight: '400px' }}
     />
   )
 }
 
-export default function MarkdownRenderer({ content }) {
+export default function MarkdownRenderer({ content, themeClass }) {
   const { zoomLevel, selectedFile } = useApp()
+  const isDark = themeClass !== 'theme-light'
 
   return (
     <HighlightableViewer filePath={selectedFile?.path}>
       <div
-        className="prose prose-invert max-w-none p-8"
+        className={`mdt-prose max-w-none p-8 ${isDark ? 'prose prose-invert' : 'prose'}`}
         style={{ fontSize: zoomLevel + '%' }}
       >
         <ReactMarkdown

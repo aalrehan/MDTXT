@@ -1,12 +1,130 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react'
-import { FolderOpen, Search, X } from 'lucide-react'
+import { FolderOpen, Search, X, ChevronDown, ChevronUp, Moon, Sun, BookOpen, Library as LibraryIcon, X as XIcon } from 'lucide-react'
 import FileItem from './FileItem'
 import { useApp } from '../context/AppContext'
 
+function ThemeToggle() {
+  const [current, setCurrent] = useState(() => {
+    if (typeof document === 'undefined') return 'dark'
+    return document.documentElement.classList.contains('theme-light') ? 'light' : 'dark'
+  })
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.detail === 'light' || e.detail === 'dark') {
+        setCurrent(e.detail)
+      }
+    }
+    window.addEventListener('mdtxt:theme-change', handler)
+    return () => window.removeEventListener('mdtxt:theme-change', handler)
+  }, [])
+
+  const isLight = current === 'light'
+
+  const toggle = () => {
+    const next = isLight ? 'dark' : 'light'
+    window.dispatchEvent(new CustomEvent('mdtxt:theme-change', { detail: next }))
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      className="flex items-center justify-between w-full px-2.5 py-2 rounded-md text-text-secondary hover:text-text-primary hover:bg-accent-soft transition-all duration-150 group"
+      title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+    >
+      <div className="flex items-center gap-2">
+        {isLight ? <Sun size={14} /> : <Moon size={14} />}
+        <span className="text-sm">{isLight ? 'Light Mode' : 'Dark Mode'}</span>
+      </div>
+      <div
+        className={`relative w-8 h-4 rounded-full transition-colors duration-200 ${isLight ? 'bg-accent' : 'bg-border-strong'}`}
+      >
+        <div
+          className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-soft transition-transform duration-200 ${isLight ? 'translate-x-4' : 'translate-x-0'}`}
+        />
+      </div>
+    </button>
+  )
+}
+
+function LibrarySection({ recentFolders, onSelect, onClear }) {
+  const [collapsed, setCollapsed] = useState(false)
+  if (!recentFolders || recentFolders.length === 0) return null
+
+  const handleClear = (e) => {
+    e.stopPropagation()
+    onClear()
+  }
+
+  return (
+    <div className="px-3 pt-3 pb-2 border-b border-border-subtle">
+      <button
+        onClick={() => setCollapsed(c => !c)}
+        className="flex items-center justify-between w-full px-1 py-1 text-text-muted hover:text-text-secondary transition-colors group"
+      >
+        <div className="flex items-center gap-1.5">
+          <LibraryIcon size={11} />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">Library</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {!collapsed && (
+            <span
+              onClick={handleClear}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(e) } }}
+              className="text-text-muted hover:text-accent transition-colors p-0.5 rounded"
+              title="Clear library"
+            >
+              <XIcon size={11} />
+            </span>
+          )}
+          {collapsed ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+        </div>
+      </button>
+      {!collapsed && (
+        <div className="mt-1.5 space-y-0.5">
+          {recentFolders.map((folderPath) => {
+            const folderName = folderPath.split(/[/\\]/).pop() || folderPath
+            return (
+              <button
+                key={folderPath}
+                onClick={() => onSelect(folderPath)}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-accent-soft text-left text-sm transition-all duration-150"
+                title={folderPath}
+              >
+                <BookOpen size={12} className="text-accent flex-shrink-0" />
+                <span className="truncate">{folderName}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Sidebar() {
-  const { rootFolderPath, files, selectedFile, setSelectedFile, searchQuery, setSearchQuery } = useApp()
+  const {
+    rootFolderPath,
+    files,
+    selectedFile,
+    setSelectedFile,
+    searchQuery,
+    setSearchQuery,
+    recentFolders,
+    setRootFolderPath,
+    clearRecentFolders
+  } = useApp()
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const inputRef = useRef(null)
+
+  const handleChooseFolder = async () => {
+    const result = await window.electronAPI.chooseFolder()
+    if (!result.canceled && result.filePaths.length > 0) {
+      setRootFolderPath(result.filePaths[0])
+    }
+  }
 
   const filteredFiles = useMemo(() => {
     if (!searchQuery.trim()) return files
@@ -51,12 +169,34 @@ export default function Sidebar() {
   }, [searchQuery])
 
   return (
-    <div className="w-[280px] flex-shrink-0 flex flex-col glass border-r border-white/10">
+    <div className="w-[280px] flex-shrink-0 flex flex-col bg-bg-sidebar border-r border-border-subtle transition-colors duration-200">
+      <div className="px-3 pt-3 pb-2">
+        <button
+          onClick={handleChooseFolder}
+          style={{
+            backgroundColor: '#676386',
+            color: '#ffffff'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#565477' }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#676386' }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 shadow-soft"
+        >
+          <FolderOpen size={15} />
+          <span>Choose Folder</span>
+        </button>
+      </div>
+
+      <LibrarySection
+        recentFolders={recentFolders}
+        onSelect={(p) => setRootFolderPath(p)}
+        onClear={clearRecentFolders}
+      />
+
       {rootFolderPath && (
-        <div className="px-4 py-3 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <FolderOpen size={14} className="text-white/40 flex-shrink-0" />
-            <p className="text-xs text-white/40 truncate">
+        <div className="px-4 py-2 border-b border-border-subtle">
+          <div className="flex items-center gap-2 min-w-0">
+            <FolderOpen size={12} className="text-accent flex-shrink-0" />
+            <p className="text-sm text-text-secondary truncate">
               {rootFolderPath.split(/[/\\]/).pop()}
             </p>
           </div>
@@ -64,34 +204,34 @@ export default function Sidebar() {
       )}
 
       {rootFolderPath && files.length > 0 && (
-        <div className="px-3 pt-3 pb-1">
+        <div className="px-3 pt-2 pb-1">
           <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" />
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search files..."
-              className="w-full pl-8 pr-7 py-1.5 rounded-md bg-white/5 border border-white/10 text-white/80 text-sm placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
+              placeholder="Filter files..."
+              className="w-full pl-8 pr-7 py-1.5 rounded-md bg-bg-surface border border-border-subtle text-text-primary text-sm placeholder-text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
               >
-                <X size={14} />
+                <X size={13} />
               </button>
             )}
           </div>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto py-2">
+      <div className="flex-1 overflow-y-auto py-1">
         {filteredFiles.length === 0 && searchQuery ? (
-          <div className="flex flex-col items-center justify-center py-8 text-white/30">
-            <Search size={24} className="mb-2" />
-            <p className="text-sm">No files match your search</p>
+          <div className="flex flex-col items-center justify-center py-8 text-text-muted">
+            <Search size={22} className="mb-2 opacity-60" />
+            <p className="text-sm">No files match</p>
           </div>
         ) : (
           filteredFiles.map((file, index) => (
@@ -107,6 +247,10 @@ export default function Sidebar() {
             />
           ))
         )}
+      </div>
+
+      <div className="border-t border-border-subtle px-2 py-2">
+        <ThemeToggle />
       </div>
     </div>
   )

@@ -11,8 +11,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveHighlights: (filePath, highlights) => ipcRenderer.invoke('highlights:save', filePath, highlights),
   getRecentFolders: () => ipcRenderer.invoke('store:getRecentFolders'),
   addRecentFolder: (folderPath) => ipcRenderer.invoke('store:addRecentFolder', folderPath),
+  clearRecentFolders: () => ipcRenderer.invoke('store:clearRecentFolders'),
   getLastOpenedFolder: () => ipcRenderer.invoke('store:getLastOpenedFolder'),
   setLastOpenedFolder: (folderPath) => ipcRenderer.invoke('store:setLastOpenedFolder', folderPath),
+  getTheme: () => ipcRenderer.invoke('store:getTheme'),
+  setTheme: (theme) => ipcRenderer.invoke('store:setTheme', theme),
   onUpdateAvailable: (callback) => {
     const sub1 = ipcRenderer.on('update:available', (_e, data) => callback({ type: 'available', ...data }))
     const sub2 = ipcRenderer.on('update:downloaded', (_e, data) => callback({ type: 'downloaded', ...data }))

@@ -2,16 +2,16 @@ import React from 'react'
 import { FileText, AlignLeft } from 'lucide-react'
 
 export default function FileItem({ file, isSelected, isFocused, onClick }) {
-  const paddingLeft = 8 + file.depth * 16
-  const depthOpacity = Math.max(0.5, 0.7 - file.depth * 0.08)
+  const paddingLeft = 12 + file.depth * 14
+  const depthOpacity = Math.max(0.5, 0.85 - file.depth * 0.12)
 
   const guides = []
   for (let i = 1; i <= file.depth; i++) {
     guides.push(
       <div
         key={i}
-        className="absolute top-0 bottom-0 w-px bg-white/[0.06]"
-        style={{ left: `${10 + (i - 1) * 16}px` }}
+        className="absolute top-0 bottom-0 w-px bg-border-strong"
+        style={{ left: `${14 + (i - 1) * 14}px`, opacity: 0.5 }}
       />
     )
   }
@@ -20,21 +20,26 @@ export default function FileItem({ file, isSelected, isFocused, onClick }) {
     <div
       onClick={onClick}
       className={`
-        relative flex items-center gap-2 py-2 px-3 cursor-pointer transition-all duration-150
-        ${isSelected ? 'border-l-2 border-indigo-400 bg-indigo-400/10' : 'border-l-2 border-transparent'}
-        ${isFocused ? 'bg-white/5' : 'hover:bg-white/5'}
+        relative flex items-center gap-2 py-1.5 pr-3 cursor-pointer transition-all duration-150
+        border-l-2
+        ${isSelected
+          ? 'border-l-accent bg-accent-soft'
+          : isFocused
+            ? 'border-l-transparent bg-accent-softer'
+            : 'border-l-transparent hover:bg-accent-softer'
+        }
       `}
       style={{ paddingLeft: `${paddingLeft}px` }}
     >
       {guides}
       {file.extension === '.md' ? (
-        <FileText size={14} className="text-indigo-400 flex-shrink-0" />
+        <FileText size={14} className="text-file-md flex-shrink-0" />
       ) : (
-        <AlignLeft size={14} className="text-emerald-400 flex-shrink-0" />
+        <AlignLeft size={14} className="text-file-txt flex-shrink-0" />
       )}
       <span
-        className={`text-sm font-medium truncate ${isSelected ? 'text-white' : ''}`}
-        style={{ color: isSelected ? undefined : `rgba(255,255,255,${depthOpacity})` }}
+        className={`text-sm truncate ${isSelected ? 'text-text-primary font-semibold' : 'font-normal'}`}
+        style={{ color: isSelected ? undefined : `var(--text-secondary)`, opacity: isSelected ? 1 : depthOpacity }}
       >
         {file.name}
       </span>

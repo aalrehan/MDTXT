@@ -16,7 +16,6 @@ export function AppProvider({ children }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [updateInfo, setUpdateInfo] = useState(null)
   const saveTimersRef = useRef({})
-  const hasRestoredRef = useRef(false)
 
   const showToast = useCallback((message) => {
     setToastMessage(message)
@@ -48,18 +47,6 @@ export function AppProvider({ children }) {
   useEffect(() => {
     window.electronAPI.getRecentFolders().then(setRecentFolders)
   }, [])
-
-  useEffect(() => {
-    if (hasRestoredRef.current) return
-    hasRestoredRef.current = true
-    window.electronAPI.getLastOpenedFolder().then((folder) => {
-      if (folder) {
-        setRootFolderPath(folder)
-        const folderName = folder.split(/[/\\]/).pop() || folder
-        showToast(`Restored: ${folderName}`)
-      }
-    })
-  }, [showToast])
 
   const scanFolder = useCallback(async (folderPath) => {
     const result = await window.electronAPI.scanFolder(folderPath)
@@ -143,6 +130,17 @@ export function AppProvider({ children }) {
     }
   }, [])
 
+  const setTheme = useCallback((next) => {
+    if (next !== 'light' && next !== 'dark' && next !== null) return
+    window.dispatchEvent(new CustomEvent('mdtxt:theme-change', { detail: next }))
+    window.electronAPI.setTheme(next).catch(() => {})
+  }, [])
+
+  const clearRecentFolders = useCallback(async () => {
+    const updated = await window.electronAPI.clearRecentFolders()
+    setRecentFolders(Array.isArray(updated) ? updated : [])
+  }, [])
+
   const value = {
     rootFolderPath,
     setRootFolderPath,
@@ -163,7 +161,9 @@ export function AppProvider({ children }) {
     searchQuery,
     setSearchQuery,
     updateInfo,
-    handleInstallUpdate
+    handleInstallUpdate,
+    setTheme,
+    clearRecentFolders
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

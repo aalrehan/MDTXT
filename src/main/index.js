@@ -49,15 +49,16 @@ function getStateFile() {
 function readState() {
   try {
     const file = getStateFile()
-    if (!fs.existsSync(file)) return { recentFolders: [], lastOpenedFolder: null }
+    if (!fs.existsSync(file)) return { recentFolders: [], lastOpenedFolder: null, theme: null }
     const raw = fs.readFileSync(file, 'utf-8')
     const parsed = JSON.parse(raw)
     return {
       recentFolders: Array.isArray(parsed.recentFolders) ? parsed.recentFolders : [],
-      lastOpenedFolder: typeof parsed.lastOpenedFolder === 'string' ? parsed.lastOpenedFolder : null
+      lastOpenedFolder: typeof parsed.lastOpenedFolder === 'string' ? parsed.lastOpenedFolder : null,
+      theme: parsed.theme === 'light' || parsed.theme === 'dark' ? parsed.theme : null
     }
   } catch (e) {
-    return { recentFolders: [], lastOpenedFolder: null }
+    return { recentFolders: [], lastOpenedFolder: null, theme: null }
   }
 }
 
@@ -384,6 +385,25 @@ ipcMain.handle('store:setLastOpenedFolder', (_event, folderPath) => {
   state.lastOpenedFolder = folderPath ? path.resolve(folderPath) : null
   writeState(state)
   return { ok: true }
+})
+
+ipcMain.handle('store:clearRecentFolders', () => {
+  const state = readState()
+  state.recentFolders = []
+  writeState(state)
+  return state.recentFolders
+})
+
+ipcMain.handle('store:getTheme', () => {
+  const state = readState()
+  return state.theme
+})
+
+ipcMain.handle('store:setTheme', (_event, theme) => {
+  const state = readState()
+  state.theme = theme === 'light' || theme === 'dark' ? theme : null
+  writeState(state)
+  return { ok: true, theme: state.theme }
 })
 
 ipcMain.handle('update:install', () => {

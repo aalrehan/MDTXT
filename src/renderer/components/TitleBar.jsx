@@ -1,9 +1,9 @@
 import React from 'react'
-import { ZoomIn, ZoomOut, FolderOpen, Minus, Square, X } from 'lucide-react'
+import { Plus, Minus, Square, X } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
 export default function TitleBar() {
-  const { zoomLevel, setZoomLevel, setRootFolderPath, rootFolderPath } = useApp()
+  const { zoomLevel, setZoomLevel, rootFolderPath } = useApp()
 
   const handleZoomIn = () => {
     setZoomLevel(Math.min(zoomLevel + 10, 200))
@@ -13,66 +13,51 @@ export default function TitleBar() {
     setZoomLevel(Math.max(zoomLevel - 10, 60))
   }
 
-  const handleChooseFolder = async () => {
-    const result = await window.electronAPI.chooseFolder()
-    if (!result.canceled && result.filePaths.length > 0) {
-      setRootFolderPath(result.filePaths[0])
-    }
-  }
-
   return (
     <div
-      className="h-8 flex items-center justify-between px-4 glass drag-region border-b border-white/10"
+      className="h-8 flex items-center justify-between px-4 glass drag-region border-b border-border-subtle"
       style={{ WebkitAppRegion: 'drag' }}
     >
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-white/80">MDTXT</span>
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="text-sm font-semibold text-text-primary tracking-tight">
+          MDTXT
+        </span>
         {rootFolderPath && (
-          <span className="text-xs text-white/40 truncate max-w-[200px]">
-            {rootFolderPath}
+          <span className="text-sm text-text-secondary truncate">
+            {rootFolderPath.split(/[/\\]/).pop()}
           </span>
         )}
       </div>
 
       <div
-        className="flex items-center gap-1"
+        className="flex items-center gap-1 flex-shrink-0"
         style={{ WebkitAppRegion: 'no-drag' }}
       >
         <button
-          onClick={handleChooseFolder}
-          className="p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150"
-          title="Open Folder"
-        >
-          <FolderOpen size={16} />
-        </button>
-
-        <div className="w-px h-4 bg-white/20 mx-2" />
-
-        <button
           onClick={handleZoomOut}
-          className="p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 hover:scale-105 transition-all duration-150"
-          title="Zoom Out"
+          className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-accent-soft transition-all duration-150"
+          title="Smaller font"
         >
-          <ZoomOut size={16} />
+          <Minus size={16} />
         </button>
 
-        <span className="text-xs text-white/60 w-12 text-center font-mono">
+        <span className="text-xs text-text-muted w-11 text-center tracking-wider font-normal select-none">
           {zoomLevel}%
         </span>
 
         <button
           onClick={handleZoomIn}
-          className="p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 hover:scale-105 transition-all duration-150"
-          title="Zoom In"
+          className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-accent-soft transition-all duration-150"
+          title="Larger font"
         >
-          <ZoomIn size={16} />
+          <Plus size={16} />
         </button>
 
-        <div className="w-px h-4 bg-white/20 mx-2" />
+        <div className="w-px h-4 bg-border-strong mx-2" />
 
         <button
           onClick={() => window.electronAPI.minimize()}
-          className="p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150"
+          className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-accent-soft transition-all duration-150"
           title="Minimize"
         >
           <Minus size={16} />
@@ -80,7 +65,7 @@ export default function TitleBar() {
 
         <button
           onClick={() => window.electronAPI.maximize()}
-          className="p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150"
+          className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-accent-soft transition-all duration-150"
           title="Maximize"
         >
           <Square size={14} />
@@ -88,7 +73,7 @@ export default function TitleBar() {
 
         <button
           onClick={() => window.electronAPI.close()}
-          className="p-1.5 rounded-md text-white/60 hover:text-white hover:bg-red-500/80 transition-all duration-150"
+          className="p-1.5 rounded-md text-text-secondary hover:text-red-500 hover:bg-red-500/10 transition-all duration-150"
           title="Close"
         >
           <X size={16} />
