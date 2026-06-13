@@ -62,8 +62,8 @@ jobs:
           mkdir -p /tmp/verify && dpkg-deb -x dist/mdtxt_*.deb /tmp/verify
           node -e "
             const asar = require('@electron/asar');
-            asar.extractFile('/tmp/verify/opt/MDTXT/resources/app.asar', 'package.json', '/tmp/pkg.json');
-            const p = require('/tmp/pkg.json');
+            asar.extractAll('/tmp/verify/opt/MDTXT/resources/app.asar', '/tmp/asar-out');
+            const p = require('/tmp/asar-out/package.json');
             const expected = require('./package.json').version;
             if (p.version !== expected) throw new Error('version mismatch: bundle=' + p.version + ' expected=' + expected);
             if (/@(gmail|yahoo|hotmail|outlook|icloud|protonmail)\.com/.test(p.author.email)) throw new Error('personal email leak');
